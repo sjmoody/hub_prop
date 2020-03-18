@@ -1,4 +1,3 @@
-
 import json, csv, datetime
 import pandas as pd
 from hubspot import getAllContactProperties, getAllContacts
@@ -8,27 +7,39 @@ logging.basicConfig(filename='logger.log', format='%(asctime)s Module %(module)s
 logger = logging.getLogger(__name__)
 logger.info("Initialized")
 
+API_KEY = ''
 
-
+def get_key():
+    input_key = input("Welcome to FieldTrip.  Enter API key (default demo returns HS demo data):")
+    if not input_key:
+        input_key = 'demo'
+    return input_key
 
 def main():
+    global API_KEY
+    logging.debug(f"In main.  API Key is {API_KEY}")
+    API_KEY = get_key()
+    
     ts = int(datetime.datetime.now().timestamp())
     contacts_file = str(ts) + 'hs_contact_list' + '.csv'
     summary_file = str(ts) + 'hs_field_trip' + '.csv'
+    logging.debug(f"Before getData, API Key is {API_KEY}")
     # get data
     getData(contacts_file)
     # count fields in csv
     countFieldsInCsv(contacts_file, summary_file)
 
 def getData(csv_output):    
-    property_list = getAllContactProperties()
+    global API_KEY
+    logging.debug(f'Inside getData. api key here is {API_KEY}')
+    property_list = getAllContactProperties(key_value=API_KEY)
     logger.debug(f"Property List received.  Length: {len(property_list)}")
 
     fieldnames = []
     for p in property_list:
         fieldnames.append(p['name'])
 
-    contact_list = getAllContacts(fieldnames)
+    contact_list = getAllContacts(fieldnames, key_value=API_KEY)
     logger.info(f" contacts received.  Length: {len(contact_list)}")
     # Write field with all fieldnames as headers.  Edit this to include all contacts
     

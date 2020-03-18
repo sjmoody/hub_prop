@@ -1,25 +1,36 @@
 import json, requests, urllib, csv, datetime
+import logging
 
 logging.basicConfig(filename='logger.log', format='%(asctime)s Module %(module)s %(message)s',level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 logger.info("Initialized")
 
 
-APIKEY_VALUE = 'demo'
-CLIENT_API_KEY_VALUE = '4b76e7c3-c253-492a-8d71-a3b18d5f9053'
-DEMOAPIKEY = "?hapikey=" + APIKEY_VALUE
-CLIENT_API_KEY = "?hapikey=" + CLIENT_API_KEY_VALUE
+DEFAULT_APIKEY_VALUE = 'demo'
+API_KEY = "?hapikey="
 HS_API_URL = 'https://api.hubapi.com'
+# CLIENT_API_KEY_VALUE = 
+# DEMOAPIKEY = "?hapikey=" + APIKEY_VALUE
+# CLIENT_API_KEY = "?hapikey=" + CLIENT_API_KEY_VALUE
 
 
-def getAllEngagementsOnce(offset=''):
+# def get_key():
+#     input_key = input("Enter API key (default demo returns HS demo data):")
+#     if not input_key:
+#         input_key = 'demo'
+#     return input_key
+
+def getAllEngagementsOnce(offset='', key_value=''):
     # Returns dict.  Access engagements as data['results'][<list>]
+    if key_value == '':
+        key_value = get_key()
+    
     endpoint = '/engagements/v1/engagements/paged'
     
     if offset == '':
-        url = HS_API_URL + endpoint + CLIENT_API_KEY + '&limit=250'     
+        url = HS_API_URL + endpoint + API_KEY + key_value + '&limit=250'     
     else:     
-        url = HS_API_URL + endpoint + CLIENT_API_KEY + '&limit=250' + "&offset=" + str(offset)
+        url = HS_API_URL + endpoint + API_KEY + key_value + '&limit=250' + "&offset=" + str(offset)
     response = requests.get(url)
     response.raise_for_status()
     logger.info(f'Response: {response}')
@@ -31,8 +42,9 @@ def getAllEngagementsOnce(offset=''):
 def getAllEngagements():
     # Returns dict.  Access engagements as data['results'][<list>]
     logger.info("getting all engagements")    
+    key_value = get_key()
     # first run: data is object with results, hasmore offset
-    data = getAllEngagementsOnce() 
+    data = getAllEngagementsOnce(key_value=key_value) 
     results = data['results']    
     logger.info("first run completed.  Length of results: ", len(results))
     logger.info('results is of type', type(results))
@@ -41,7 +53,7 @@ def getAllEngagements():
         logger.info("has more is ", data['hasMore'])
         logger.info('offset is ', data['offset'])
         logger.info("going to get more data")
-        data = (getAllEngagementsOnce(offset=data['offset']))
+        data = (getAllEngagementsOnce(key_value=key_value, offset=data['offset']))
         results.extend(data['results'])
         logger.info("len of results now ", len(results))
     return results
@@ -49,9 +61,11 @@ def getAllEngagements():
 def getEngagement():
     pass
 
-def getTotalNumberOfContacts():
+def getTotalNumberOfContacts(key_value=''):
+    if key_value == '':
+        key_value = get_key()
     endpoint = "/contacts/v1/contacts/statistics"
-    url = HS_API_URL + endpoint + CLIENT_API_KEY
+    url = HS_API_URL + endpoint + API_KEY + key_value
     response = requests.get(url)
     response.raise_for_status()
     
@@ -60,13 +74,16 @@ def getTotalNumberOfContacts():
     return data['contacts'] # returns integer
 
 
-def getAllContactProperties():
+def getAllContactProperties(key_value=''):
+    if key_value == '':
+        print("fetching key")
+        key_value = get_key()
     endpoint = '/properties/v1/contacts/properties'
-    url = HS_API_URL + endpoint + CLIENT_API_KEY
-    # print('fetching for url', url)
+    url = HS_API_URL + endpoint + API_KEY + key_value 
+    print('fetching for url', url)
     response = requests.get(url) 
     response.raise_for_status()
-    logger.info("response received: ", response.status_code) #200
+    logger.info(f"response received: {response.status_code}") #200
     data = response.json()
     logger.info("data received: ")
     # print(data)
@@ -76,10 +93,12 @@ def getAllContactProperties():
 
 
 
-def getAllContacts(property_list):
-    totalContacts = getTotalNumberOfContacts()
+def getAllContacts(property_list, key_value=''):
+    if key_value == '':
+        key_value = get_key()
+    totalContacts = getTotalNumberOfContacts(key_value=key_value)
     max_results = totalContacts
-    hapikey = CLIENT_API_KEY_VALUE
+    hapikey = key_value
     count = 100 
     contact_list = []
 
@@ -89,7 +108,7 @@ def getAllContacts(property_list):
 
 
     get_all_contacts_url = "https://api.hubapi.com/contacts/v1/lists/all/contacts/all?"
-    parameter_dict = {'hapikey': hapikey, 
+    parameter_dict = {'hapikey': key_value, 
                       'count': count,                                            
                       }
     headers = {}
@@ -113,9 +132,9 @@ def getAllContacts(property_list):
     logger.info('loop finished')
 
     list_length = len(contact_list) 
-    logger.info("results returned of type ", type(contact_list))
+    logger.info(f"results returned of type {type(contact_list)}")
 
-    logger.info("You've succesfully parsed through {} contact records and added them to a list".format(list_length))
+    logger.info(f"You've succesfully parsed through {list_length} contact records and added them to a list")
     return contact_list
 
 
@@ -162,7 +181,7 @@ def saveAllContacts(property_name_list):
     
 
 def saveAllContactProperties():
-    property_list = getAllContactProperties()
+    property_list = getAllContactProperties(key_value='')
     print("collected properties.  Count: ", len(property_list))
     ts = int(datetime.datetime.now().timestamp())
 
