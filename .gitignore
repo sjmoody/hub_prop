@@ -130,3 +130,6 @@ dmypy.json
 *.txt
 *.xls
 *.xlsx
+
+# Jupyter
+*.ipynb

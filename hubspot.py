@@ -20,7 +20,7 @@ HS_API_URL = 'https://api.hubapi.com'
 #         input_key = 'demo'
 #     return input_key
 
-def getAllEngagementsOnce(offset='', key_value=''):
+def get_all_engagements_once(offset='', key_value=''):
     # Returns dict.  Access engagements as data['results'][<list>]
     if key_value == '':
         key_value = get_key()
@@ -39,12 +39,12 @@ def getAllEngagementsOnce(offset='', key_value=''):
     return data
 
 
-def getAllEngagements():
+def get_all_engagements():
     # Returns dict.  Access engagements as data['results'][<list>]
     logger.info("getting all engagements")    
     key_value = get_key()
     # first run: data is object with results, hasmore offset
-    data = getAllEngagementsOnce(key_value=key_value) 
+    data = get_all_engagements_once(key_value=key_value) 
     results = data['results']    
     logger.info("first run completed.  Length of results: ", len(results))
     logger.info('results is of type', type(results))
@@ -53,15 +53,15 @@ def getAllEngagements():
         logger.info("has more is ", data['hasMore'])
         logger.info('offset is ', data['offset'])
         logger.info("going to get more data")
-        data = (getAllEngagementsOnce(key_value=key_value, offset=data['offset']))
+        data = (get_all_engagements_once(key_value=key_value, offset=data['offset']))
         results.extend(data['results'])
         logger.info("len of results now ", len(results))
     return results
 
-def getEngagement():
+def get_engagement():
     pass
 
-def getTotalNumberOfContacts(key_value=''):
+def get_total_number_of_contacts(key_value=''):
     if key_value == '':
         key_value = get_key()
     endpoint = "/contacts/v1/contacts/statistics"
@@ -74,7 +74,7 @@ def getTotalNumberOfContacts(key_value=''):
     return data['contacts'] # returns integer
 
 
-def getAllContactProperties(key_value=''):
+def get_all_contact_properties(key_value=''):
     if key_value == '':
         print("fetching key")
         key_value = get_key()
@@ -93,10 +93,10 @@ def getAllContactProperties(key_value=''):
 
 
 
-def getAllContacts(property_list, key_value=''):
+def get_all_contacts(property_list, key_value=''):
     if key_value == '':
         key_value = get_key()
-    totalContacts = getTotalNumberOfContacts(key_value=key_value)
+    totalContacts = get_total_number_of_contacts(key_value=key_value)
     max_results = totalContacts
     hapikey = key_value
     count = 100 
@@ -138,9 +138,9 @@ def getAllContacts(property_list, key_value=''):
     return contact_list
 
 
-def saveAllContacts(property_name_list):
+def save_all_contacts(property_name_list):
     #get all contacts 
-    contact_list = getAllContacts(property_name_list)
+    contact_list = get_all_contacts(property_name_list)
     # contacts = []
     # for contact in contact_list:
     #     contacts.extend()
@@ -181,7 +181,7 @@ def saveAllContacts(property_name_list):
     
 
 def saveAllContactProperties():
-    property_list = getAllContactProperties(key_value='')
+    property_list = get_all_contact_properties(key_value='')
     print("collected properties.  Count: ", len(property_list))
     ts = int(datetime.datetime.now().timestamp())
 
