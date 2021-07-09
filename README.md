@@ -1,6 +1,6 @@
 # hub_prop
 
-field_trip.py: Runs a query of Hubspot database for all records with all properties and sums count of records with a non null value for each property.  Saves as local file.
+prop_pose.py: Runs a query of Hubspot database for all records with all properties and sums count of records with a non null value for each property.  Saves as local file.
 
 hubspot.py: wrapper(?) for hubspot api 
 
